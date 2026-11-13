@@ -1,0 +1,430 @@
+<title>Mi Segundo Cerebro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sprint header → today's check-in → kanban (4 columns, stacks on phone) → capture + weekly efficiency */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#E3E8EE; --ink:#16202B; --muted:#5A6878; --line:#D3DAE2;
+  --accent:#2C55D6; --accent-soft:#DCE4FB;
+  --ok:#1F8A5B; --ok-soft:#D6F0E3; --warn:#B7791F; --warn-soft:#F7EBD3; --bad:#C2413B; --bad-soft:#F8DEDC;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Inter", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151C; --surface:#18212B; --surface-2:#212C38; --ink:#E6ECF2; --muted:#98A6B5; --line:#2C3946;
+  --accent:#7D9BFF; --accent-soft:#22305A;
+  --ok:#4CC28A; --ok-soft:#173A2A; --warn:#E3A84B; --warn-soft:#3B2E17; --bad:#F07A73; --bad-soft:#40201F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151C; --surface:#18212B; --surface-2:#212C38; --ink:#E6ECF2; --muted:#98A6B5; --line:#2C3946;
+  --accent:#7D9BFF; --accent-soft:#22305A;
+  --ok:#4CC28A; --ok-soft:#173A2A; --warn:#E3A84B; --warn-soft:#3B2E17; --bad:#F07A73; --bad-soft:#40201F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1240px;margin:0 auto;padding-block:24px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,5vw,40px);font-weight:700}
+h2{font-size:20px;font-weight:700}
+.eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#0F151C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#0F151C}}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.status{font-size:13px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:2px}
+.kpi b{font-family:var(--display);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .bar{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-top:6px}
+.kpi .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .4s}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* check-in */
+.checkin{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
+.ci-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
+.ci-row:first-of-type{border-top:0}
+.ci-actions{display:flex;flex-wrap:wrap;gap:6px}
+.ci-actions button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 11px;font-size:13px}
+.ci-actions button[data-r="avance"]:hover,.ci-actions button.on[data-r="avance"]{background:var(--ok-soft);border-color:var(--ok)}
+.ci-actions button[data-r="sin-avance"]:hover,.ci-actions button.on[data-r="sin-avance"]{background:var(--warn-soft);border-color:var(--warn)}
+.ci-actions button[data-r="bloqueada"]:hover,.ci-actions button.on[data-r="bloqueada"]{background:var(--bad-soft);border-color:var(--bad)}
+.ci-actions button[data-r="terminada"]:hover,.ci-actions button.on[data-r="terminada"]{background:var(--accent-soft);border-color:var(--accent)}
+@media (max-width:640px){.ci-row{grid-template-columns:minmax(0,1fr)}}
+
+/* board */
+.board-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+@media (max-width:980px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.board{grid-template-columns:minmax(0,1fr)}}
+.col{background:var(--surface-2);border-radius:12px;padding:10px;display:grid;gap:8px;min-height:120px;align-content:start}
+.col.drop{outline:2px dashed var(--accent);outline-offset:-4px}
+.col-h{display:flex;justify-content:space-between;align-items:baseline;padding:4px 4px 6px}
+.col-h h3{font-size:15px}
+.card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:8px;cursor:grab}
+.card.p-alta{border-left-color:var(--bad)}
+.card.p-media{border-left-color:var(--warn)}
+.card.p-baja{border-left-color:var(--muted)}
+.card.blocked{background:var(--bad-soft)}
+.card .t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-size:12px;border-radius:999px;padding:2px 8px;background:var(--surface-2);color:var(--muted)}
+.chip.due{font-family:var(--mono);font-size:11px}
+.chip.late{background:var(--bad-soft);color:var(--bad)}
+.chip.carry{background:var(--warn-soft);color:var(--warn)}
+.chip.blk{background:var(--bad);color:#fff}
+.card-f{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.card select{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:3px 6px;font-size:12px}
+.link{background:none;border:0;color:var(--accent);padding:0;font-size:13px}
+
+/* lower grid */
+.lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px}
+@media (max-width:900px){.lower{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mic.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.inbox-list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.inbox-list li{font-size:13px;border-left:3px solid var(--accent);padding:4px 10px;background:var(--bg);border-radius:0 6px 6px 0;overflow-wrap:anywhere}
+.inbox-list li.done{border-left-color:var(--ok);color:var(--muted)}
+.charts{display:grid;gap:18px}
+svg text{fill:var(--muted);font-family:var(--mono);font-size:10px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
+th{font-weight:500;color:var(--muted)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+
+/* dialog */
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:20px;width:min(520px,calc(100vw - 32px))}
+dialog::backdrop{background:rgba(10,15,20,.45)}
+.form{display:grid;gap:12px}
+.form label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.form input,.form select,.form textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);width:100%}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.hist{font-size:12px;color:var(--muted);display:grid;gap:3px;max-height:120px;overflow:auto}
+.empty{font-size:13px;color:var(--muted);padding:8px 4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow" id="sprintLabel">Sprint semanal</div>
+      <h1>Mi Segundo Cerebro</h1>
+    </div>
+    <div class="status" id="status" role="status">Cargando tareas…</div>
+  </header>
+
+  <section class="kpis" aria-label="Resumen del sprint">
+    <div class="kpi"><span class="eyebrow">Comprometidas</span><b id="kCommit" class="num">–</b><span class="muted" style="font-size:12px">tareas de esta semana</span></div>
+    <div class="kpi"><span class="eyebrow">Hechas</span><b id="kDone" class="num">–</b><div class="bar"><i id="kBar"></i></div></div>
+    <div class="kpi"><span class="eyebrow">Eficiencia</span><b id="kEff" class="num">–</b><span class="muted" style="font-size:12px">hechas ÷ comprometidas</span></div>
+    <div class="kpi"><span class="eyebrow">Bloqueadas</span><b id="kBlk" class="num">–</b><span class="muted" style="font-size:12px" id="kCarry">arrastradas: –</span></div>
+  </section>
+
+  <section class="checkin" aria-labelledby="ciTitle">
+    <div class="board-head">
+      <div><h2 id="ciTitle">Check-in de hoy</h2><div class="muted" style="font-size:13px" id="ciDate"></div></div>
+      <div class="muted" style="font-size:13px" id="ciCount"></div>
+    </div>
+    <div id="ciList"><div class="empty">Las tareas de esta semana aparecen acá para que marques si avanzaste.</div></div>
+  </section>
+
+  <section style="display:grid;gap:12px" aria-labelledby="boardTitle">
+    <div class="board-head">
+      <h2 id="boardTitle">Tablero</h2>
+      <div class="row">
+        <select id="areaFilter" class="btn" aria-label="Filtrar por área"><option value="">Todas las áreas</option></select>
+        <button class="btn primary" id="newBtn">+ Nueva tarea</button>
+      </div>
+    </div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section class="lower">
+    <div class="panel" aria-labelledby="capTitle">
+      <h2 id="capTitle">Capturar</h2>
+      <p class="muted" style="margin:0;font-size:13px">Escribí o dictá lo que tengas en la cabeza, sin ordenar. En la próxima conversación lo convierto en tareas.</p>
+      <textarea id="capText" placeholder="Ej.: llamar al contador por el IVA, grabar el video del lunes, mandar el CV a…"></textarea>
+      <div class="row">
+        <button class="btn primary" id="capSave">Guardar en bandeja</button>
+        <button class="btn mic" id="micBtn" hidden>🎙 Dictar</button>
+        <span class="muted" style="font-size:12px" id="capMsg"></span>
+      </div>
+      <div class="eyebrow">Bandeja</div>
+      <ul class="inbox-list" id="inboxList"><li class="done">Vacía. Lo que guardes aparece acá.</li></ul>
+    </div>
+
+    <div class="panel" aria-labelledby="effTitle">
+      <h2 id="effTitle">Eficiencia</h2>
+      <div class="charts">
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px">Burndown de la semana · tareas pendientes por día</div>
+          <svg id="burn" viewBox="0 0 520 190" width="100%" role="img" aria-label="Burndown del sprint"></svg>
+          <div class="legend"><span><i style="background:var(--accent)"></i>Real</span><span><i style="background:var(--line)"></i>Ritmo ideal</span></div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px">Últimas 6 semanas · comprometidas vs hechas</div>
+          <svg id="weeks" viewBox="0 0 520 170" width="100%" role="img" aria-label="Comprometidas contra hechas por semana"></svg>
+          <div class="legend"><span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>Comprometidas</span><span><i style="background:var(--ok)"></i>Hechas</span></div>
+        </div>
+        <div style="overflow-x:auto">
+          <div class="eyebrow" style="margin-bottom:6px">Por área · esta semana</div>
+          <table><thead><tr><th>Área</th><th class="n">Abiertas</th><th class="n">Hechas</th><th class="n">Días con avance</th></tr></thead><tbody id="areaTable"></tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<dialog id="dlg">
+  <form class="form" id="taskForm">
+    <h2 id="dlgTitle">Tarea</h2>
+    <label>Título<input id="fTitle" required></label>
+    <div class="grid2">
+      <label>Área / proyecto<input id="fArea" list="areaList" placeholder="Mentoría"></label>
+      <label>Prioridad<select id="fPrio"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select></label>
+      <label>Estado<select id="fStatus"></select></label>
+      <label>Fecha límite<input id="fDue" type="date"></label>
+    </div>
+    <label>Notas<textarea id="fNotes" style="min-height:70px"></textarea></label>
+    <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input id="fRec" type="checkbox" style="width:auto">Tarea recurrente</label>
+    <div class="hist" id="fHist"></div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><button type="button" class="btn" id="delBtn">Eliminar</button><span id="delConfirm" hidden><button type="button" class="btn" id="delYes" style="border-color:var(--bad);color:var(--bad)">Sí, eliminar</button></span></div>
+      <div class="row"><button type="button" class="btn" id="cancelBtn">Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
+    </div>
+  </form>
+  <datalist id="areaList"></datalist>
+</dialog>
+
+<script>
+(function(){
+const COLS=[["backlog","Backlog"],["semana","Esta semana"],["haciendo","Haciendo"],["hecho","Hecho"]];
+const STATUS_LABEL={backlog:"Backlog",semana:"Esta semana",haciendo:"Haciendo",bloqueada:"Bloqueada",hecho:"Hecho"};
+const RESULT_LABEL={"avance":"Avancé","sin-avance":"No avancé","bloqueada":"Bloqueada","terminada":"Terminé"};
+let db=null, tasks=[], inbox=[], filter="", editing=null;
+const $=id=>document.getElementById(id);
+
+function pad(n){return String(n).padStart(2,"0")}
+function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function today(){return ymd(new Date())}
+function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);const y=t.getUTCFullYear();const w=Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7);return y+"-W"+pad(w)}
+function monday(d){const m=new Date(d.getFullYear(),d.getMonth(),d.getDate());m.setDate(m.getDate()-((m.getDay()+6)%7));return m}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const DIAS=["dom","lun","mar","mié","jue","vie","sáb"];
+function fmt(d){return d.getDate()+" "+MESES[d.getMonth()]}
+function fmtDue(s){const [y,m,dd]=s.split("-").map(Number);return dd+" "+MESES[m-1]}
+const NOW=new Date(), WEEK=isoWeek(NOW), MON=monday(NOW);
+
+function setStatus(t){$("status").textContent=t}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+$("sprintLabel").textContent="Sprint "+WEEK.split("-W")[1]+" · "+fmt(MON)+" – "+fmt(addDays(MON,6));
+$("ciDate").textContent=DIAS[NOW.getDay()]+" "+fmt(NOW);
+
+// ---------- metrics ----------
+function inSprint(t,w){return Array.isArray(t.sprints)&&t.sprints.includes(w)}
+function doneInWeek(t,w){return t.status==="hecho"&&t.doneAt&&isoWeek(new Date(t.doneAt+"T12:00:00"))===w}
+function committed(w){return tasks.filter(t=>inSprint(t,w)||doneInWeek(t,w))}
+
+function renderKpis(){
+  const c=committed(WEEK), d=c.filter(t=>doneInWeek(t,WEEK));
+  const blk=tasks.filter(t=>t.status==="bloqueada").length;
+  const carry=tasks.filter(t=>t.status!=="hecho"&&inSprint(t,WEEK)&&t.sprints.length>1).length;
+  $("kCommit").textContent=c.length; $("kDone").textContent=d.length;
+  const eff=c.length?Math.round(d.length/c.length*100):0;
+  $("kEff").textContent=c.length?eff+"%":"–"; $("kBar").style.width=eff+"%";
+  $("kBlk").textContent=blk; $("kCarry").textContent="arrastradas de otra semana: "+carry;
+}
+
+function renderCheckin(){
+  const list=tasks.filter(t=>["semana","haciendo","bloqueada"].includes(t.status)).sort(prioSort);
+  const td=today(); let answered=0;
+  if(!list.length){$("ciList").innerHTML='<div class="empty">No hay tareas en la semana. Pasá alguna de Backlog a "Esta semana".</div>';$("ciCount").textContent="";return}
+  $("ciList").innerHTML=list.map(t=>{
+    const last=(t.checkins||[]).filter(c=>c.date===td).pop();
+    if(last)answered++;
+    return `<div class="ci-row"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(t.title)}</div><div class="muted" style="font-size:12px">${esc(t.area||"Sin área")} · ${STATUS_LABEL[t.status]}${last?" · hoy: "+RESULT_LABEL[last.result]:""}</div></div>
+    <div class="ci-actions" data-id="${t.id}">${Object.entries(RESULT_LABEL).map(([k,v])=>`<button data-r="${k}" class="${last&&last.result===k?"on":""}">${v}</button>`).join("")}</div></div>`}).join("");
+  $("ciCount").textContent=answered+" de "+list.length+" respondidas hoy";
+}
+$("ciList").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-r]"); if(!b)return;
+  const id=b.parentElement.dataset.id, r=b.dataset.r, t=tasks.find(x=>x.id===id); if(!t)return;
+  const td=today(); const ch=(t.checkins||[]).filter(c=>c.date!==td); ch.push({date:td,result:r});
+  const patch={checkins:ch};
+  if(r==="terminada"){patch.status="hecho";patch.doneAt=td}
+  else if(r==="bloqueada"){patch.status="bloqueada"}
+  else if(r==="avance"&&t.status!=="haciendo"){patch.status="haciendo"}
+  else if(r==="sin-avance"&&t.status==="bloqueada"){patch.status="semana"}
+  save(id,patch);
+});
+
+const PR={alta:0,media:1,baja:2};
+function prioSort(a,b){return (PR[a.priority]??1)-(PR[b.priority]??1)||String(a.due||"9").localeCompare(String(b.due||"9"))}
+
+function cardHtml(t){
+  const td=today(); const late=t.due&&t.due<td&&t.status!=="hecho";
+  const carry=t.status!=="hecho"&&inSprint(t,WEEK)&&t.sprints.length>1;
+  const opts=Object.entries(STATUS_LABEL).map(([k,v])=>`<option value="${k}" ${k===t.status?"selected":""}>${v}</option>`).join("");
+  return `<article class="card p-${t.priority||"media"} ${t.status==="bloqueada"?"blocked":""}" draggable="true" data-id="${t.id}">
+    <div class="t">${esc(t.title)}</div>
+    <div class="chips">${t.status==="bloqueada"?'<span class="chip blk">Bloqueada</span>':""}<span class="chip">${esc(t.area||"Sin área")}</span>${t.due?`<span class="chip due ${late?"late":""}">${late?"vencida ":""}${fmtDue(t.due)}</span>`:""}${carry?'<span class="chip carry">arrastrada</span>':""}${t.recurring?'<span class="chip">recurrente</span>':""}</div>
+    <div class="card-f"><select aria-label="Mover a" data-move="${t.id}">${opts}</select><button class="link" data-edit="${t.id}">Editar</button></div>
+  </article>`;
+}
+function renderBoard(){
+  const vis=tasks.filter(t=>!filter||(t.area||"")===filter);
+  const td=today();
+  $("board").innerHTML=COLS.map(([k,label])=>{
+    let items=vis.filter(t=>k==="semana"?(t.status==="semana"||t.status==="bloqueada"):t.status===k);
+    if(k==="hecho")items=items.filter(t=>!t.doneAt||(new Date(td)-new Date(t.doneAt))/864e5<=14).sort((a,b)=>String(b.doneAt).localeCompare(String(a.doneAt)));
+    else items.sort(prioSort);
+    return `<div class="col" data-col="${k}"><div class="col-h"><h3>${label}</h3><span class="muted num" style="font-size:13px">${items.length}</span></div>${items.map(cardHtml).join("")||'<div class="empty">Sin tareas</div>'}</div>`}).join("");
+  const areas=[...new Set(tasks.map(t=>t.area).filter(Boolean))].sort();
+  const sel=$("areaFilter"); const cur=sel.value;
+  sel.innerHTML='<option value="">Todas las áreas</option>'+areas.map(a=>`<option ${a===cur?"selected":""}>${esc(a)}</option>`).join("");
+  $("areaList").innerHTML=areas.map(a=>`<option value="${esc(a)}">`).join("");
+}
+function moveTo(id,status){
+  const t=tasks.find(x=>x.id===id); if(!t||t.status===status)return;
+  const patch={status};
+  if(["semana","haciendo","bloqueada","hecho"].includes(status)){const s=new Set(t.sprints||[]);s.add(WEEK);patch.sprints=[...s]}
+  patch.doneAt=status==="hecho"?today():null;
+  save(id,patch);
+}
+$("board").addEventListener("change",e=>{const s=e.target.closest("select[data-move]");if(s)moveTo(s.dataset.move,s.value)});
+$("board").addEventListener("click",e=>{const b=e.target.closest("[data-edit]");if(b)openTask(b.dataset.edit)});
+$("board").addEventListener("dragstart",e=>{const c=e.target.closest(".card");if(c)e.dataTransfer.setData("text/plain",c.dataset.id)});
+$("board").addEventListener("dragover",e=>{const c=e.target.closest(".col");if(c){e.preventDefault();c.classList.add("drop")}});
+$("board").addEventListener("dragleave",e=>{const c=e.target.closest(".col");if(c)c.classList.remove("drop")});
+$("board").addEventListener("drop",e=>{const c=e.target.closest(".col");if(!c)return;e.preventDefault();c.classList.remove("drop");moveTo(e.dataTransfer.getData("text/plain"),c.dataset.col)});
+$("areaFilter").addEventListener("change",e=>{filter=e.target.value;renderBoard()});
+
+// ---------- charts ----------
+function renderBurn(){
+  const svg=$("burn"), W=520,H=190,L=34,R=12,T=12,B=26;
+  const c=committed(WEEK), n=c.length;
+  const max=Math.max(n,1), x=i=>L+i*(W-L-R)/6, y=v=>T+(H-T-B)*(1-v/max);
+  let s="";
+  const step=max<=5?1:Math.ceil(max/5);
+  for(let v=0;v<=max;v+=step){s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${y(v)+3}" text-anchor="end">${v}</text>`}
+  for(let i=0;i<7;i++){const d=addDays(MON,i);s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${DIAS[d.getDay()]} ${d.getDate()}</text>`}
+  s+=`<line x1="${x(0)}" y1="${y(n)}" x2="${x(6)}" y2="${y(0)}" stroke="var(--line)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  const td=today(), pts=[];
+  for(let i=0;i<7;i++){const d=ymd(addDays(MON,i)); if(d>td)break; const rem=n-c.filter(t=>t.status==="hecho"&&t.doneAt&&t.doneAt<=d).length; pts.push([x(i),y(rem),rem])}
+  if(pts.length){
+    s+=`<path d="M${pts[0][0]},${y(0)} ${pts.map(p=>"L"+p[0]+","+p[1]).join(" ")} L${pts[pts.length-1][0]},${y(0)} Z" fill="var(--accent-soft)" opacity=".6"/>`;
+    s+=`<polyline points="${pts.map(p=>p[0]+","+p[1]).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+    const e=pts[pts.length-1]; s+=`<circle cx="${e[0]}" cy="${e[1]}" r="4.5" fill="var(--accent)"/><text x="${e[0]}" y="${e[1]-9}" text-anchor="middle" style="fill:var(--ink);font-weight:600">${e[2]}</text>`;
+  }
+  if(!n)s+=`<text x="${W/2}" y="${H/2}" text-anchor="middle">Todavía no hay tareas comprometidas esta semana</text>`;
+  svg.innerHTML=s;
+}
+function renderWeeks(){
+  const svg=$("weeks"), W=520,H=170,L=34,R=12,T=14,B=26, weeks=[];
+  for(let i=5;i>=0;i--){const m=addDays(MON,-7*i);weeks.push([isoWeek(m),m])}
+  const data=weeks.map(([w,m])=>{const c=committed(w);return {w,m,c:c.length,d:c.filter(t=>doneInWeek(t,w)).length}});
+  const max=Math.max(1,...data.map(d=>d.c)), bw=(W-L-R)/6, y=v=>T+(H-T-B)*(1-v/max);
+  let s=""; const step=max<=5?1:Math.ceil(max/5);
+  for(let v=0;v<=max;v+=step){s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-8}" y="${y(v)+3}" text-anchor="end">${v}</text>`}
+  data.forEach((d,i)=>{const cx=L+i*bw+bw/2, w=Math.min(46,bw*.6);
+    s+=`<rect x="${cx-w/2}" y="${y(d.c)}" width="${w}" height="${y(0)-y(d.c)}" rx="3" fill="var(--surface-2)" stroke="var(--line)"/>`;
+    s+=`<rect x="${cx-w/2+5}" y="${y(d.d)}" width="${w-10}" height="${y(0)-y(d.d)}" rx="2" fill="var(--ok)"/>`;
+    if(d.c)s+=`<text x="${cx}" y="${y(d.c)-4}" text-anchor="middle" style="fill:var(--ink)">${d.d}/${d.c}</text>`;
+    s+=`<text x="${cx}" y="${H-8}" text-anchor="middle" ${d.w===WEEK?'style="fill:var(--ink);font-weight:600"':""}>S${d.w.split("-W")[1]}</text>`});
+  svg.innerHTML=s;
+}
+function renderAreas(){
+  const c=committed(WEEK), by={};
+  tasks.filter(t=>t.status!=="hecho"||doneInWeek(t,WEEK)).forEach(t=>{const a=t.area||"Sin área";by[a]=by[a]||{o:0,d:0,days:new Set()};
+    if(t.status==="hecho")by[a].d++;else by[a].o++;
+    (t.checkins||[]).forEach(ch=>{if(isoWeek(new Date(ch.date+"T12:00:00"))===WEEK&&(ch.result==="avance"||ch.result==="terminada"))by[a].days.add(ch.date)})});
+  const rows=Object.entries(by).sort((a,b)=>b[1].o-a[1].o);
+  $("areaTable").innerHTML=rows.map(([a,v])=>`<tr><td>${esc(a)}</td><td class="n">${v.o}</td><td class="n">${v.d}</td><td class="n">${v.days.size}</td></tr>`).join("")||'<tr><td colspan="4" class="muted">Sin datos todavía</td></tr>';
+}
+function renderInbox(){
+  const items=inbox.slice().sort((a,b)=>String(b.created).localeCompare(String(a.created))).slice(0,8);
+  $("inboxList").innerHTML=items.length?items.map(i=>`<li class="${i.processed?"done":""}">${i.processed?"✓ ":""}${esc(i.text)}</li>`).join(""):'<li class="done">Vacía. Lo que guardes aparece acá.</li>';
+}
+function renderAll(){renderKpis();renderCheckin();renderBoard();renderBurn();renderWeeks();renderAreas();renderInbox()}
+renderAll();
+
+// ---------- dialog ----------
+$("fStatus").innerHTML=Object.entries(STATUS_LABEL).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+function openTask(id){
+  editing=id; const t=id?tasks.find(x=>x.id===id):{title:"",area:"",priority:"media",status:"backlog",due:"",notes:"",recurring:false,checkins:[]};
+  $("dlgTitle").textContent=id?"Editar tarea":"Nueva tarea";
+  $("fTitle").value=t.title||""; $("fArea").value=t.area||""; $("fPrio").value=t.priority||"media"; $("fStatus").value=t.status||"backlog";
+  $("fDue").value=t.due||""; $("fNotes").value=t.notes||""; $("fRec").checked=!!t.recurring;
+  $("fHist").innerHTML=(t.checkins||[]).slice(-8).reverse().map(c=>`<div>${esc(c.date)} · ${RESULT_LABEL[c.result]||esc(c.result)}${c.note?" · "+esc(c.note):""}</div>`).join("");
+  $("delBtn").hidden=!id; $("delConfirm").hidden=true;
+  $("dlg").showModal();
+}
+$("newBtn").addEventListener("click",()=>openTask(null));
+$("cancelBtn").addEventListener("click",()=>$("dlg").close());
+$("delBtn").addEventListener("click",()=>{$("delConfirm").hidden=false});
+$("delYes").addEventListener("click",async()=>{if(!db||!editing)return;try{await db.doc("tasks/"+editing).delete();setStatus("Tarea eliminada")}catch(e){setStatus("No se pudo eliminar: "+e.message)}$("dlg").close()});
+$("taskForm").addEventListener("submit",async e=>{
+  e.preventDefault(); if(!db){setStatus("Sin conexión a la base de datos: no se guardó.");return}
+  const status=$("fStatus").value;
+  const data={title:$("fTitle").value.trim(),area:$("fArea").value.trim(),priority:$("fPrio").value,status,due:$("fDue").value||null,notes:$("fNotes").value.trim(),recurring:$("fRec").checked};
+  const prev=editing?tasks.find(x=>x.id===editing):null;
+  const s=new Set(prev?.sprints||[]); if(status!=="backlog")s.add(WEEK); data.sprints=[...s];
+  data.doneAt=status==="hecho"?(prev?.doneAt||today()):null;
+  try{
+    if(editing)await db.doc("tasks/"+editing).update(data);
+    else await db.collection("tasks").add({...data,created:today(),checkins:[]});
+    setStatus("Guardado"); $("dlg").close();
+  }catch(err){setStatus("No se pudo guardar: "+err.message)}
+});
+
+async function save(id,patch){
+  if(!db){setStatus("Sin conexión a la base de datos: no se guardó.");return}
+  try{await db.doc("tasks/"+id).update(patch);setStatus("Guardado")}catch(e){setStatus("No se pudo guardar: "+e.message)}
+}
+
+// ---------- capture ----------
+$("capSave").addEventListener("click",async()=>{
+  const text=$("capText").value.trim(); if(!text)return;
+  if(!db){$("capMsg").textContent="Sin conexión: copiá el texto y pegámelo en el chat.";return}
+  try{await db.collection("inbox").add({text,created:new Date().toISOString(),source:usedMic?"voz":"texto",processed:false});$("capText").value="";usedMic=false;$("capMsg").textContent="Guardado en la bandeja"}
+  catch(e){$("capMsg").textContent="No se pudo guardar: "+e.message}
+});
+let dict=null, usedMic=false;
+$("micBtn").addEventListener("click",()=>{
+  if(!dict)return;
+  if(dict.active()){dict.stop().catch(()=>{});return}
+  dict.start({language:"es"}).catch(e=>{if(e&&e.code==="not_granted")$("micBtn").hidden=true;else $("capMsg").textContent="No se pudo iniciar el dictado"});
+});
+
+// ---------- boot ----------
+(async()=>{
+  const c=window.claude;
+  if(!c||!c.use){setStatus("Abrí esta página en Claude para ver y guardar tus tareas.");return}
+  c.use("dictation").then(d=>{if(!d)return;dict=d;$("micBtn").hidden=false;
+    let base="";
+    d.onState(({state})=>{const on=state==="listening"||state==="starting";$("micBtn").classList.toggle("on",on);$("micBtn").textContent=on?"■ Detener":"🎙 Dictar";if(state==="starting")base=$("capText").value})
+    d.onPartial(({text})=>{$("capText").value=(base?base+" ":"")+text});
+    d.onFinal(({text})=>{base=(base?base+" ":"")+text;$("capText").value=base;usedMic=true});
+  }).catch(()=>{});
+  db=await c.use("db");
+  if(!db){setStatus("Iniciá sesión en Claude para ver tus tareas.");return}
+  const timer=setTimeout(()=>setStatus("La base de datos tarda en responder…"),10000);
+  db.collection("tasks").onSnapshot(snap=>{clearTimeout(timer);tasks=snap.docs.map(d=>({id:d.id,...d.data()}));setStatus(tasks.length+" tareas · actualizado "+new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}));renderAll()},e=>{clearTimeout(timer);setStatus("No se pudieron cargar las tareas: "+e.message)});
+  db.collection("inbox").onSnapshot(snap=>{inbox=snap.docs.map(d=>({id:d.id,...d.data()}));renderInbox()},()=>{});
+})();
+})();
+</script>
