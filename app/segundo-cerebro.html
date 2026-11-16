@@ -3,11 +3,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: sprint header → today's check-in → kanban (4 columns, stacks on phone) → capture + weekly efficiency */
+/* Layout: sprint header → KPIs → check-in → metas y proyectos (avance %) → kanban ABCDE → captura + eficiencia */
 :root{
   --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#E3E8EE; --ink:#16202B; --muted:#5A6878; --line:#D3DAE2;
   --accent:#2C55D6; --accent-soft:#DCE4FB;
   --ok:#1F8A5B; --ok-soft:#D6F0E3; --warn:#B7791F; --warn-soft:#F7EBD3; --bad:#C2413B; --bad-soft:#F8DEDC;
+  --pa:#C2413B; --pb:#C9861A; --pc:#2C55D6; --pd:#7A5BC4; --pe:#8C97A3;
   --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body:"Inter", system-ui, -apple-system, sans-serif;
   --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -15,11 +16,13 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0F151C; --surface:#18212B; --surface-2:#212C38; --ink:#E6ECF2; --muted:#98A6B5; --line:#2C3946;
   --accent:#7D9BFF; --accent-soft:#22305A;
-  --ok:#4CC28A; --ok-soft:#173A2A; --warn:#E3A84B; --warn-soft:#3B2E17; --bad:#F07A73; --bad-soft:#40201F; color-scheme:dark}}
+  --ok:#4CC28A; --ok-soft:#173A2A; --warn:#E3A84B; --warn-soft:#3B2E17; --bad:#F07A73; --bad-soft:#40201F;
+  --pa:#F07A73; --pb:#E3A84B; --pc:#7D9BFF; --pd:#B39AF0; --pe:#6F7C8A; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F151C; --surface:#18212B; --surface-2:#212C38; --ink:#E6ECF2; --muted:#98A6B5; --line:#2C3946;
   --accent:#7D9BFF; --accent-soft:#22305A;
-  --ok:#4CC28A; --ok-soft:#173A2A; --warn:#E3A84B; --warn-soft:#3B2E17; --bad:#F07A73; --bad-soft:#40201F; color-scheme:dark}
+  --ok:#4CC28A; --ok-soft:#173A2A; --warn:#E3A84B; --warn-soft:#3B2E17; --bad:#F07A73; --bad-soft:#40201F;
+  --pa:#F07A73; --pb:#E3A84B; --pc:#7D9BFF; --pd:#B39AF0; --pe:#6F7C8A; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
 .wrap{max-width:1240px;margin:0 auto;padding-block:24px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
@@ -28,29 +31,30 @@ h1{font-size:clamp(28px,5vw,40px);font-weight:700}
 h2{font-size:20px;font-weight:700}
 .eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .muted{color:var(--muted)}
+.small{font-size:13px}
 .num{font-variant-numeric:tabular-nums}
 button,select,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-weight:500}
 .btn:hover{border-color:var(--accent)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-:root[data-theme="dark"] .btn.primary{color:#0F151C}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#0F151C}}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sec-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
 
-/* header */
+/* header + kpis */
 .top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
 .status{font-size:13px;color:var(--muted)}
 .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:2px}
 .kpi b{font-family:var(--display);font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
-.kpi .bar{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-top:6px}
-.kpi .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .4s}
+.bar{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .4s}
 @media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* check-in */
 .checkin{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
-.ci-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
+.ci-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
 .ci-row:first-of-type{border-top:0}
 .ci-actions{display:flex;flex-wrap:wrap;gap:6px}
 .ci-actions button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 11px;font-size:13px}
@@ -58,10 +62,33 @@ button{cursor:pointer}
 .ci-actions button[data-r="sin-avance"]:hover,.ci-actions button.on[data-r="sin-avance"]{background:var(--warn-soft);border-color:var(--warn)}
 .ci-actions button[data-r="bloqueada"]:hover,.ci-actions button.on[data-r="bloqueada"]{background:var(--bad-soft);border-color:var(--bad)}
 .ci-actions button[data-r="terminada"]:hover,.ci-actions button.on[data-r="terminada"]{background:var(--accent-soft);border-color:var(--accent)}
-@media (max-width:640px){.ci-row{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.ci-row{grid-template-columns:auto minmax(0,1fr)}.ci-actions{grid-column:1 / -1}}
+
+/* priority badge */
+.pri{display:inline-grid;place-items:center;min-width:28px;height:22px;padding:0 6px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--surface);background:var(--pc)}
+.pri.A{background:var(--pa)}.pri.B{background:var(--pb)}.pri.C{background:var(--pc)}.pri.D{background:var(--pd)}.pri.E{background:var(--pe)}
+.legend-abc{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend-abc span{display:inline-flex;gap:6px;align-items:center}
+
+/* goals & projects */
+.goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));gap:14px;align-items:start}
+.goal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;min-width:0}
+.goal.nogoal{background:transparent;border-style:dashed}
+.goal-h{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:baseline}
+.goal-h h3{font-size:17px;overflow-wrap:anywhere}
+.goal-h .pct{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.goal-h .meta{grid-column:1 / -1;font-size:12px;color:var(--muted)}
+.proj{display:grid;gap:6px;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid transparent}
+.proj:hover{border-color:var(--line)}
+.proj-t{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.proj-t b{font-weight:600;overflow-wrap:anywhere;min-width:0}
+.proj-t .num{font-family:var(--mono);font-size:13px}
+.proj .bar{height:8px}
+.proj-f{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+.proj.paused{opacity:.65}
+.link{background:none;border:0;color:var(--accent);padding:0;font-size:13px}
 
 /* board */
-.board-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
 .board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
 @media (max-width:980px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:560px){.board{grid-template-columns:minmax(0,1fr)}}
@@ -69,29 +96,27 @@ button{cursor:pointer}
 .col.drop{outline:2px dashed var(--accent);outline-offset:-4px}
 .col-h{display:flex;justify-content:space-between;align-items:baseline;padding:4px 4px 6px}
 .col-h h3{font-size:15px}
-.card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:8px;cursor:grab}
-.card.p-alta{border-left-color:var(--bad)}
-.card.p-media{border-left-color:var(--warn)}
-.card.p-baja{border-left-color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--pc);border-radius:8px;padding:10px 12px;display:grid;gap:8px;cursor:grab}
+.card.A{border-left-color:var(--pa)}.card.B{border-left-color:var(--pb)}.card.C{border-left-color:var(--pc)}.card.D{border-left-color:var(--pd)}.card.E{border-left-color:var(--pe);opacity:.6}
 .card.blocked{background:var(--bad-soft)}
+.card-top{display:flex;gap:8px;align-items:flex-start}
 .card .t{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .chip{font-size:12px;border-radius:999px;padding:2px 8px;background:var(--surface-2);color:var(--muted)}
+.chip.proj-chip{background:var(--accent-soft);color:var(--ink)}
 .chip.due{font-family:var(--mono);font-size:11px}
 .chip.late{background:var(--bad-soft);color:var(--bad)}
 .chip.carry{background:var(--warn-soft);color:var(--warn)}
-.chip.blk{background:var(--bad);color:#fff}
+.chip.blk{background:var(--bad);color:var(--surface)}
 .card-f{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .card select{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:3px 6px;font-size:12px}
-.link{background:none;border:0;color:var(--accent);padding:0;font-size:13px}
 
 /* lower grid */
 .lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px}
 @media (max-width:900px){.lower{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
 textarea{width:100%;min-height:110px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg);resize:vertical}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.mic.on{background:var(--bad);border-color:var(--bad);color:#fff}
+.mic.on{background:var(--bad);border-color:var(--bad);color:var(--surface)}
 .inbox-list{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .inbox-list li{font-size:13px;border-left:3px solid var(--accent);padding:4px 10px;background:var(--bg);border-radius:0 6px 6px 0;overflow-wrap:anywhere}
 .inbox-list li.done{border-left-color:var(--ok);color:var(--muted)}
@@ -104,15 +129,17 @@ td,th{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
 th{font-weight:500;color:var(--muted)}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 
-/* dialog */
-dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:20px;width:min(520px,calc(100vw - 32px))}
+/* dialogs */
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:20px;width:min(540px,calc(100vw - 32px))}
 dialog::backdrop{background:rgba(10,15,20,.45)}
 .form{display:grid;gap:12px}
 .form label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
 .form input,.form select,.form textarea{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg);width:100%}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .hist{font-size:12px;color:var(--muted);display:grid;gap:3px;max-height:120px;overflow:auto}
+.hint{font-size:12px;color:var(--muted)}
 .empty{font-size:13px;color:var(--muted);padding:8px 4px}
+.danger{border-color:var(--bad);color:var(--bad)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -126,27 +153,42 @@ dialog::backdrop{background:rgba(10,15,20,.45)}
   </header>
 
   <section class="kpis" aria-label="Resumen del sprint">
-    <div class="kpi"><span class="eyebrow">Comprometidas</span><b id="kCommit" class="num">–</b><span class="muted" style="font-size:12px">tareas de esta semana</span></div>
-    <div class="kpi"><span class="eyebrow">Hechas</span><b id="kDone" class="num">–</b><div class="bar"><i id="kBar"></i></div></div>
+    <div class="kpi"><span class="eyebrow">Comprometidas</span><b id="kCommit" class="num">–</b><span class="muted" style="font-size:12px" id="kA">tareas A: –</span></div>
+    <div class="kpi"><span class="eyebrow">Hechas</span><b id="kDone" class="num">–</b><div class="bar" style="margin-top:6px"><i id="kBar"></i></div></div>
     <div class="kpi"><span class="eyebrow">Eficiencia</span><b id="kEff" class="num">–</b><span class="muted" style="font-size:12px">hechas ÷ comprometidas</span></div>
     <div class="kpi"><span class="eyebrow">Bloqueadas</span><b id="kBlk" class="num">–</b><span class="muted" style="font-size:12px" id="kCarry">arrastradas: –</span></div>
   </section>
 
   <section class="checkin" aria-labelledby="ciTitle">
-    <div class="board-head">
-      <div><h2 id="ciTitle">Check-in de hoy</h2><div class="muted" style="font-size:13px" id="ciDate"></div></div>
-      <div class="muted" style="font-size:13px" id="ciCount"></div>
+    <div class="sec-head">
+      <div><h2 id="ciTitle">Check-in de hoy</h2><div class="muted small" id="ciDate"></div></div>
+      <div class="muted small" id="ciCount"></div>
     </div>
-    <div id="ciList"><div class="empty">Las tareas de esta semana aparecen acá para que marques si avanzaste.</div></div>
+    <div id="ciList"><div class="empty">Las tareas de esta semana aparecen acá, ordenadas por prioridad, para que marques si avanzaste.</div></div>
+  </section>
+
+  <section style="display:grid;gap:12px" aria-labelledby="projTitle">
+    <div class="sec-head">
+      <div><h2 id="projTitle">Metas y proyectos</h2><div class="muted small">El avance de cada proyecto se calcula con sus tareas hechas (sin contar las E).</div></div>
+      <div class="row"><button class="btn" id="newGoalBtn">+ Meta</button><button class="btn primary" id="newProjBtn">+ Proyecto</button></div>
+    </div>
+    <div class="goals" id="goals"><div class="empty">Tus proyectos aparecen acá con su porcentaje de avance, agrupados por meta. Creá el primero con “+ Proyecto”.</div></div>
   </section>
 
   <section style="display:grid;gap:12px" aria-labelledby="boardTitle">
-    <div class="board-head">
+    <div class="sec-head">
       <h2 id="boardTitle">Tablero</h2>
       <div class="row">
-        <select id="areaFilter" class="btn" aria-label="Filtrar por área"><option value="">Todas las áreas</option></select>
+        <select id="projFilter" class="btn" aria-label="Filtrar por proyecto"><option value="">Todos los proyectos</option></select>
         <button class="btn primary" id="newBtn">+ Nueva tarea</button>
       </div>
+    </div>
+    <div class="legend-abc" aria-label="Método ABCDE">
+      <span><i class="pri A">A</i>Debo hacerla: hay consecuencias serias</span>
+      <span><i class="pri B">B</i>Debería: consecuencias leves</span>
+      <span><i class="pri C">C</i>Sería bueno: sin consecuencias</span>
+      <span><i class="pri D">D</i>Delegar</span>
+      <span><i class="pri E">E</i>Eliminar</span>
     </div>
     <div class="board" id="board"></div>
   </section>
@@ -154,7 +196,7 @@ dialog::backdrop{background:rgba(10,15,20,.45)}
   <section class="lower">
     <div class="panel" aria-labelledby="capTitle">
       <h2 id="capTitle">Capturar</h2>
-      <p class="muted" style="margin:0;font-size:13px">Escribí o dictá lo que tengas en la cabeza, sin ordenar. En la próxima conversación lo convierto en tareas.</p>
+      <p class="muted small" style="margin:0">Escribí o dictá lo que tengas en la cabeza, sin ordenar. En la próxima conversación lo convierto en tareas con su prioridad y proyecto.</p>
       <textarea id="capText" placeholder="Ej.: llamar al contador por el IVA, grabar el video del lunes, mandar el CV a…"></textarea>
       <div class="row">
         <button class="btn primary" id="capSave">Guardar en bandeja</button>
@@ -179,8 +221,8 @@ dialog::backdrop{background:rgba(10,15,20,.45)}
           <div class="legend"><span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>Comprometidas</span><span><i style="background:var(--ok)"></i>Hechas</span></div>
         </div>
         <div style="overflow-x:auto">
-          <div class="eyebrow" style="margin-bottom:6px">Por área · esta semana</div>
-          <table><thead><tr><th>Área</th><th class="n">Abiertas</th><th class="n">Hechas</th><th class="n">Días con avance</th></tr></thead><tbody id="areaTable"></tbody></table>
+          <div class="eyebrow" style="margin-bottom:6px">Esta semana por prioridad</div>
+          <table><thead><tr><th>Prioridad</th><th class="n">Comprometidas</th><th class="n">Hechas</th><th class="n">%</th></tr></thead><tbody id="priTable"></tbody></table>
         </div>
       </div>
     </div>
@@ -192,20 +234,57 @@ dialog::backdrop{background:rgba(10,15,20,.45)}
     <h2 id="dlgTitle">Tarea</h2>
     <label>Título<input id="fTitle" required></label>
     <div class="grid2">
-      <label>Área / proyecto<input id="fArea" list="areaList" placeholder="Mentoría"></label>
-      <label>Prioridad<select id="fPrio"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select></label>
+      <label>Prioridad (ABCDE)<select id="fPrio">
+        <option value="A">A · Debo</option><option value="B">B · Debería</option><option value="C">C · Sería bueno</option><option value="D">D · Delegar</option><option value="E">E · Eliminar</option>
+      </select></label>
+      <label>Orden dentro de la letra<input id="fRank" type="number" min="1" step="1" placeholder="1 = primero"></label>
+      <label>Proyecto<select id="fProject"></select></label>
+      <label>Área<input id="fArea" list="areaList" placeholder="Finanzas, Carrera…"></label>
       <label>Estado<select id="fStatus"></select></label>
       <label>Fecha límite<input id="fDue" type="date"></label>
     </div>
+    <label id="fDelegWrap" hidden>Delegada a<input id="fDeleg" placeholder="Nombre de quien la hace"></label>
     <label>Notas<textarea id="fNotes" style="min-height:70px"></textarea></label>
     <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input id="fRec" type="checkbox" style="width:auto">Tarea recurrente</label>
     <div class="hist" id="fHist"></div>
     <div class="row" style="justify-content:space-between">
-      <div class="row"><button type="button" class="btn" id="delBtn">Eliminar</button><span id="delConfirm" hidden><button type="button" class="btn" id="delYes" style="border-color:var(--bad);color:var(--bad)">Sí, eliminar</button></span></div>
-      <div class="row"><button type="button" class="btn" id="cancelBtn">Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
+      <div class="row"><button type="button" class="btn" id="delBtn">Eliminar</button><button type="button" class="btn danger" id="delYes" hidden>Sí, eliminar</button></div>
+      <div class="row"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
     </div>
   </form>
   <datalist id="areaList"></datalist>
+</dialog>
+
+<dialog id="pdlg">
+  <form class="form" id="projForm">
+    <h2 id="pdlgTitle">Proyecto</h2>
+    <label>Nombre<input id="pName" required placeholder="Ej.: Zenit · CNFL pérdidas"></label>
+    <div class="grid2">
+      <label>Meta a la que aporta<select id="pGoal"></select></label>
+      <label>Fecha objetivo<input id="pDue" type="date"></label>
+      <label>Estado<select id="pStatus"><option value="activo">Activo</option><option value="pausado">Pausado</option><option value="terminado">Terminado</option></select></label>
+    </div>
+    <label>Resultado esperado<textarea id="pNotes" style="min-height:60px" placeholder="Qué tiene que existir cuando el proyecto esté terminado"></textarea></label>
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><button type="button" class="btn" id="pDel">Eliminar</button><button type="button" class="btn danger" id="pDelYes" hidden>Sí, eliminar</button></div>
+      <div class="row"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="gdlg">
+  <form class="form" id="goalForm">
+    <h2 id="gdlgTitle">Meta</h2>
+    <label>Meta<input id="gName" required placeholder="Ej.: Cerrar 2 clientes institucionales"></label>
+    <div class="grid2">
+      <label>Fecha<input id="gDue" type="date"></label>
+      <label>Cómo se mide<input id="gMetric" placeholder="Ej.: contratos firmados"></label>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><button type="button" class="btn" id="gDel">Eliminar</button><button type="button" class="btn danger" id="gDelYes" hidden>Sí, eliminar</button></div>
+      <div class="row"><button type="button" class="btn" data-close>Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
+    </div>
+  </form>
 </dialog>
 
 <script>
@@ -213,7 +292,9 @@ dialog::backdrop{background:rgba(10,15,20,.45)}
 const COLS=[["backlog","Backlog"],["semana","Esta semana"],["haciendo","Haciendo"],["hecho","Hecho"]];
 const STATUS_LABEL={backlog:"Backlog",semana:"Esta semana",haciendo:"Haciendo",bloqueada:"Bloqueada",hecho:"Hecho"};
 const RESULT_LABEL={"avance":"Avancé","sin-avance":"No avancé","bloqueada":"Bloqueada","terminada":"Terminé"};
-let db=null, tasks=[], inbox=[], filter="", editing=null;
+const PRI_LABEL={A:"A · Debo",B:"B · Debería",C:"C · Sería bueno",D:"D · Delegar",E:"E · Eliminar"};
+const LEGACY={alta:"A",media:"B",baja:"C"};
+let db=null, tasks=[], inbox=[], projects=[], goals=[], filter="", editing=null, pEditing=null, gEditing=null;
 const $=id=>document.getElementById(id);
 
 function pad(n){return String(n).padStart(2,"0")}
@@ -227,36 +308,45 @@ const DIAS=["dom","lun","mar","mié","jue","vie","sáb"];
 function fmt(d){return d.getDate()+" "+MESES[d.getMonth()]}
 function fmtDue(s){const [y,m,dd]=s.split("-").map(Number);return dd+" "+MESES[m-1]}
 const NOW=new Date(), WEEK=isoWeek(NOW), MON=monday(NOW);
-
 function setStatus(t){$("status").textContent=t}
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 
 $("sprintLabel").textContent="Sprint "+WEEK.split("-W")[1]+" · "+fmt(MON)+" – "+fmt(addDays(MON,6));
 $("ciDate").textContent=DIAS[NOW.getDay()]+" "+fmt(NOW);
 
+// ---------- priority ----------
+function pr(t){const p=t.priority;return "ABCDE".includes(p)&&p?p:(LEGACY[p]||"B")}
+function prLabel(t){return pr(t)+(t.rank?t.rank:"")}
+function prioSort(a,b){return pr(a).localeCompare(pr(b))||((a.rank||99)-(b.rank||99))||String(a.due||"9").localeCompare(String(b.due||"9"))}
+function badge(t){return `<span class="pri ${pr(t)}" title="${PRI_LABEL[pr(t)]}">${prLabel(t)}</span>`}
+function projName(id){const p=projects.find(x=>x.id===id);return p?p.name:""}
+
 // ---------- metrics ----------
 function inSprint(t,w){return Array.isArray(t.sprints)&&t.sprints.includes(w)}
 function doneInWeek(t,w){return t.status==="hecho"&&t.doneAt&&isoWeek(new Date(t.doneAt+"T12:00:00"))===w}
-function committed(w){return tasks.filter(t=>inSprint(t,w)||doneInWeek(t,w))}
+function committed(w){return tasks.filter(t=>pr(t)!=="E"&&(inSprint(t,w)||doneInWeek(t,w)))}
+function projProgress(pid){const ts=tasks.filter(t=>t.project===pid&&pr(t)!=="E");const d=ts.filter(t=>t.status==="hecho").length;return {total:ts.length,done:d,pct:ts.length?Math.round(d/ts.length*100):0}}
 
 function renderKpis(){
   const c=committed(WEEK), d=c.filter(t=>doneInWeek(t,WEEK));
   const blk=tasks.filter(t=>t.status==="bloqueada").length;
   const carry=tasks.filter(t=>t.status!=="hecho"&&inSprint(t,WEEK)&&t.sprints.length>1).length;
+  const aOpen=tasks.filter(t=>pr(t)==="A"&&t.status!=="hecho").length;
   $("kCommit").textContent=c.length; $("kDone").textContent=d.length;
   const eff=c.length?Math.round(d.length/c.length*100):0;
   $("kEff").textContent=c.length?eff+"%":"–"; $("kBar").style.width=eff+"%";
   $("kBlk").textContent=blk; $("kCarry").textContent="arrastradas de otra semana: "+carry;
+  $("kA").textContent="tareas A pendientes: "+aOpen;
 }
 
 function renderCheckin(){
-  const list=tasks.filter(t=>["semana","haciendo","bloqueada"].includes(t.status)).sort(prioSort);
+  const list=tasks.filter(t=>["semana","haciendo","bloqueada"].includes(t.status)&&pr(t)!=="E").sort(prioSort);
   const td=today(); let answered=0;
   if(!list.length){$("ciList").innerHTML='<div class="empty">No hay tareas en la semana. Pasá alguna de Backlog a "Esta semana".</div>';$("ciCount").textContent="";return}
   $("ciList").innerHTML=list.map(t=>{
-    const last=(t.checkins||[]).filter(c=>c.date===td).pop();
-    if(last)answered++;
-    return `<div class="ci-row"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(t.title)}</div><div class="muted" style="font-size:12px">${esc(t.area||"Sin área")} · ${STATUS_LABEL[t.status]}${last?" · hoy: "+RESULT_LABEL[last.result]:""}</div></div>
+    const last=(t.checkins||[]).filter(c=>c.date===td).pop(); if(last)answered++;
+    const pn=projName(t.project);
+    return `<div class="ci-row">${badge(t)}<div style="min-width:0"><div style="font-weight:600;overflow-wrap:anywhere">${esc(t.title)}</div><div class="muted" style="font-size:12px">${esc(pn||t.area||"Sin proyecto")} · ${STATUS_LABEL[t.status]}${t.due?" · vence "+fmtDue(t.due):""}${last?" · hoy: "+RESULT_LABEL[last.result]:""}</div></div>
     <div class="ci-actions" data-id="${t.id}">${Object.entries(RESULT_LABEL).map(([k,v])=>`<button data-r="${k}" class="${last&&last.result===k?"on":""}">${v}</button>`).join("")}</div></div>`}).join("");
   $("ciCount").textContent=answered+" de "+list.length+" respondidas hoy";
 }
@@ -272,30 +362,63 @@ $("ciList").addEventListener("click",e=>{
   save(id,patch);
 });
 
-const PR={alta:0,media:1,baja:2};
-function prioSort(a,b){return (PR[a.priority]??1)-(PR[b.priority]??1)||String(a.due||"9").localeCompare(String(b.due||"9"))}
+// ---------- goals & projects ----------
+function projHtml(p){
+  const g=projProgress(p.id);
+  const next=tasks.filter(t=>t.project===p.id&&t.status!=="hecho"&&pr(t)!=="E").sort(prioSort)[0];
+  const late=p.due&&p.due<today()&&p.status!=="terminado";
+  return `<div class="proj ${p.status==="pausado"?"paused":""}">
+    <div class="proj-t"><b>${esc(p.name)}</b><span class="num">${g.pct}%</span></div>
+    <div class="bar"><i style="width:${g.pct}%;background:${p.status==="terminado"?"var(--ok)":"var(--accent)"}"></i></div>
+    <div class="proj-f"><span>${g.done} de ${g.total} tareas${p.due?` · ${late?"vencido ":""}${fmtDue(p.due)}`:""}${p.status!=="activo"?" · "+p.status:""}</span>
+    <span class="row" style="gap:12px"><button class="link" data-pfilter="${p.id}">Ver tareas</button><button class="link" data-pedit="${p.id}">Editar</button></span></div>
+    ${next?`<div class="muted" style="font-size:12px;overflow-wrap:anywhere">Siguiente: ${badge(next)} ${esc(next.title)}</div>`:""}
+  </div>`;
+}
+function renderGoals(){
+  const box=$("goals");
+  if(!projects.length&&!goals.length){box.innerHTML='<div class="empty">Tus proyectos aparecen acá con su porcentaje de avance, agrupados por meta. Creá el primero con “+ Proyecto”.</div>';return}
+  const order=(a,b)=>(a.status==="terminado")-(b.status==="terminado")||String(a.due||"9").localeCompare(String(b.due||"9"));
+  let html=goals.slice().sort((a,b)=>String(a.due||"9").localeCompare(String(b.due||"9"))).map(g=>{
+    const ps=projects.filter(p=>p.goal===g.id).sort(order);
+    const pct=ps.length?Math.round(ps.reduce((s,p)=>s+projProgress(p.id).pct,0)/ps.length):0;
+    return `<article class="goal"><div class="goal-h"><h3>${esc(g.name)}</h3><span class="pct">${pct}%</span>
+      <div class="meta">${g.due?"Para el "+fmtDue(g.due)+" · ":""}${g.metric?"Se mide en: "+esc(g.metric)+" · ":""}${ps.length} proyecto${ps.length===1?"":"s"} · <button class="link" data-gedit="${g.id}">Editar meta</button></div></div>
+      <div class="bar" style="height:8px"><i style="width:${pct}%"></i></div>
+      ${ps.map(projHtml).join("")||'<div class="empty">Sin proyectos todavía. Asignale uno desde “Editar”.</div>'}</article>`}).join("");
+  const loose=projects.filter(p=>!p.goal||!goals.find(g=>g.id===p.goal)).sort(order);
+  if(loose.length)html+=`<article class="goal nogoal"><div class="goal-h"><h3>Sin meta asignada</h3><span></span><div class="meta">Proyectos que todavía no apuntan a una meta concreta.</div></div>${loose.map(projHtml).join("")}</article>`;
+  box.innerHTML=html;
+}
+$("goals").addEventListener("click",e=>{
+  const f=e.target.closest("[data-pfilter]"); if(f){filter=f.dataset.pfilter;$("projFilter").value=filter;renderBoard();$("boardTitle").scrollIntoView({behavior:"smooth"});return}
+  const p=e.target.closest("[data-pedit]"); if(p){openProject(p.dataset.pedit);return}
+  const g=e.target.closest("[data-gedit]"); if(g)openGoal(g.dataset.gedit);
+});
 
+// ---------- board ----------
 function cardHtml(t){
   const td=today(); const late=t.due&&t.due<td&&t.status!=="hecho";
   const carry=t.status!=="hecho"&&inSprint(t,WEEK)&&t.sprints.length>1;
+  const pn=projName(t.project);
   const opts=Object.entries(STATUS_LABEL).map(([k,v])=>`<option value="${k}" ${k===t.status?"selected":""}>${v}</option>`).join("");
-  return `<article class="card p-${t.priority||"media"} ${t.status==="bloqueada"?"blocked":""}" draggable="true" data-id="${t.id}">
-    <div class="t">${esc(t.title)}</div>
-    <div class="chips">${t.status==="bloqueada"?'<span class="chip blk">Bloqueada</span>':""}<span class="chip">${esc(t.area||"Sin área")}</span>${t.due?`<span class="chip due ${late?"late":""}">${late?"vencida ":""}${fmtDue(t.due)}</span>`:""}${carry?'<span class="chip carry">arrastrada</span>':""}${t.recurring?'<span class="chip">recurrente</span>':""}</div>
+  return `<article class="card ${pr(t)} ${t.status==="bloqueada"?"blocked":""}" draggable="true" data-id="${t.id}">
+    <div class="card-top">${badge(t)}<div class="t">${esc(t.title)}</div></div>
+    <div class="chips">${t.status==="bloqueada"?'<span class="chip blk">Bloqueada</span>':""}${pn?`<span class="chip proj-chip">${esc(pn)}</span>`:(t.area?`<span class="chip">${esc(t.area)}</span>`:"")}${t.due?`<span class="chip due ${late?"late":""}">${late?"vencida ":""}${fmtDue(t.due)}</span>`:""}${carry?'<span class="chip carry">arrastrada</span>':""}${pr(t)==="D"&&t.delegatedTo?`<span class="chip">→ ${esc(t.delegatedTo)}</span>`:""}${t.recurring?'<span class="chip">recurrente</span>':""}</div>
     <div class="card-f"><select aria-label="Mover a" data-move="${t.id}">${opts}</select><button class="link" data-edit="${t.id}">Editar</button></div>
   </article>`;
 }
 function renderBoard(){
-  const vis=tasks.filter(t=>!filter||(t.area||"")===filter);
+  const vis=tasks.filter(t=>!filter||(filter==="__none"?!t.project:t.project===filter));
   const td=today();
   $("board").innerHTML=COLS.map(([k,label])=>{
     let items=vis.filter(t=>k==="semana"?(t.status==="semana"||t.status==="bloqueada"):t.status===k);
     if(k==="hecho")items=items.filter(t=>!t.doneAt||(new Date(td)-new Date(t.doneAt))/864e5<=14).sort((a,b)=>String(b.doneAt).localeCompare(String(a.doneAt)));
     else items.sort(prioSort);
     return `<div class="col" data-col="${k}"><div class="col-h"><h3>${label}</h3><span class="muted num" style="font-size:13px">${items.length}</span></div>${items.map(cardHtml).join("")||'<div class="empty">Sin tareas</div>'}</div>`}).join("");
+  const sel=$("projFilter");
+  sel.innerHTML='<option value="">Todos los proyectos</option>'+projects.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}" ${p.id===filter?"selected":""}>${esc(p.name)}</option>`).join("")+`<option value="__none" ${filter==="__none"?"selected":""}>Sin proyecto</option>`;
   const areas=[...new Set(tasks.map(t=>t.area).filter(Boolean))].sort();
-  const sel=$("areaFilter"); const cur=sel.value;
-  sel.innerHTML='<option value="">Todas las áreas</option>'+areas.map(a=>`<option ${a===cur?"selected":""}>${esc(a)}</option>`).join("");
   $("areaList").innerHTML=areas.map(a=>`<option value="${esc(a)}">`).join("");
 }
 function moveTo(id,status){
@@ -311,15 +434,14 @@ $("board").addEventListener("dragstart",e=>{const c=e.target.closest(".card");if
 $("board").addEventListener("dragover",e=>{const c=e.target.closest(".col");if(c){e.preventDefault();c.classList.add("drop")}});
 $("board").addEventListener("dragleave",e=>{const c=e.target.closest(".col");if(c)c.classList.remove("drop")});
 $("board").addEventListener("drop",e=>{const c=e.target.closest(".col");if(!c)return;e.preventDefault();c.classList.remove("drop");moveTo(e.dataTransfer.getData("text/plain"),c.dataset.col)});
-$("areaFilter").addEventListener("change",e=>{filter=e.target.value;renderBoard()});
+$("projFilter").addEventListener("change",e=>{filter=e.target.value;renderBoard()});
 
 // ---------- charts ----------
 function renderBurn(){
   const svg=$("burn"), W=520,H=190,L=34,R=12,T=12,B=26;
   const c=committed(WEEK), n=c.length;
   const max=Math.max(n,1), x=i=>L+i*(W-L-R)/6, y=v=>T+(H-T-B)*(1-v/max);
-  let s="";
-  const step=max<=5?1:Math.ceil(max/5);
+  let s=""; const step=max<=5?1:Math.ceil(max/5);
   for(let v=0;v<=max;v+=step){s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${y(v)+3}" text-anchor="end">${v}</text>`}
   for(let i=0;i<7;i++){const d=addDays(MON,i);s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${DIAS[d.getDay()]} ${d.getDate()}</text>`}
   s+=`<line x1="${x(0)}" y1="${y(n)}" x2="${x(6)}" y2="${y(0)}" stroke="var(--line)" stroke-width="2" stroke-dasharray="5 4"/>`;
@@ -347,40 +469,43 @@ function renderWeeks(){
     s+=`<text x="${cx}" y="${H-8}" text-anchor="middle" ${d.w===WEEK?'style="fill:var(--ink);font-weight:600"':""}>S${d.w.split("-W")[1]}</text>`});
   svg.innerHTML=s;
 }
-function renderAreas(){
-  const c=committed(WEEK), by={};
-  tasks.filter(t=>t.status!=="hecho"||doneInWeek(t,WEEK)).forEach(t=>{const a=t.area||"Sin área";by[a]=by[a]||{o:0,d:0,days:new Set()};
-    if(t.status==="hecho")by[a].d++;else by[a].o++;
-    (t.checkins||[]).forEach(ch=>{if(isoWeek(new Date(ch.date+"T12:00:00"))===WEEK&&(ch.result==="avance"||ch.result==="terminada"))by[a].days.add(ch.date)})});
-  const rows=Object.entries(by).sort((a,b)=>b[1].o-a[1].o);
-  $("areaTable").innerHTML=rows.map(([a,v])=>`<tr><td>${esc(a)}</td><td class="n">${v.o}</td><td class="n">${v.d}</td><td class="n">${v.days.size}</td></tr>`).join("")||'<tr><td colspan="4" class="muted">Sin datos todavía</td></tr>';
+function renderPriTable(){
+  const c=committed(WEEK);
+  const rows="ABCD".split("").map(p=>{const ts=c.filter(t=>pr(t)===p);const d=ts.filter(t=>doneInWeek(t,WEEK)).length;return [p,ts.length,d]}).filter(r=>r[1]);
+  $("priTable").innerHTML=rows.map(([p,n,d])=>`<tr><td><span class="pri ${p}">${p}</span> <span class="muted">${PRI_LABEL[p].split(" · ")[1]}</span></td><td class="n">${n}</td><td class="n">${d}</td><td class="n">${Math.round(d/n*100)}%</td></tr>`).join("")||'<tr><td colspan="4" class="muted">Sin datos todavía</td></tr>';
 }
 function renderInbox(){
   const items=inbox.slice().sort((a,b)=>String(b.created).localeCompare(String(a.created))).slice(0,8);
   $("inboxList").innerHTML=items.length?items.map(i=>`<li class="${i.processed?"done":""}">${i.processed?"✓ ":""}${esc(i.text)}</li>`).join(""):'<li class="done">Vacía. Lo que guardes aparece acá.</li>';
 }
-function renderAll(){renderKpis();renderCheckin();renderBoard();renderBurn();renderWeeks();renderAreas();renderInbox()}
+function renderAll(){renderKpis();renderCheckin();renderGoals();renderBoard();renderBurn();renderWeeks();renderPriTable();renderInbox()}
 renderAll();
 
-// ---------- dialog ----------
+// ---------- dialogs ----------
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>b.closest("dialog").close()));
 $("fStatus").innerHTML=Object.entries(STATUS_LABEL).map(([k,v])=>`<option value="${k}">${v}</option>`).join("");
+$("fPrio").addEventListener("change",()=>{$("fDelegWrap").hidden=$("fPrio").value!=="D"});
+function projOptions(sel){return '<option value="">Sin proyecto</option>'+projects.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}" ${p.id===sel?"selected":""}>${esc(p.name)}</option>`).join("")}
+function goalOptions(sel){return '<option value="">Sin meta</option>'+goals.map(g=>`<option value="${g.id}" ${g.id===sel?"selected":""}>${esc(g.name)}</option>`).join("")}
+
 function openTask(id){
-  editing=id; const t=id?tasks.find(x=>x.id===id):{title:"",area:"",priority:"media",status:"backlog",due:"",notes:"",recurring:false,checkins:[]};
+  editing=id; const t=id?tasks.find(x=>x.id===id):{title:"",area:"",priority:"B",status:"backlog",project:filter&&filter!=="__none"?filter:"",checkins:[]};
   $("dlgTitle").textContent=id?"Editar tarea":"Nueva tarea";
-  $("fTitle").value=t.title||""; $("fArea").value=t.area||""; $("fPrio").value=t.priority||"media"; $("fStatus").value=t.status||"backlog";
-  $("fDue").value=t.due||""; $("fNotes").value=t.notes||""; $("fRec").checked=!!t.recurring;
+  $("fTitle").value=t.title||""; $("fArea").value=t.area||""; $("fPrio").value=pr(t); $("fRank").value=t.rank||"";
+  $("fProject").innerHTML=projOptions(t.project||""); $("fStatus").value=t.status||"backlog";
+  $("fDue").value=t.due||""; $("fNotes").value=t.notes||""; $("fRec").checked=!!t.recurring; $("fDeleg").value=t.delegatedTo||"";
+  $("fDelegWrap").hidden=pr(t)!=="D";
   $("fHist").innerHTML=(t.checkins||[]).slice(-8).reverse().map(c=>`<div>${esc(c.date)} · ${RESULT_LABEL[c.result]||esc(c.result)}${c.note?" · "+esc(c.note):""}</div>`).join("");
-  $("delBtn").hidden=!id; $("delConfirm").hidden=true;
+  $("delBtn").hidden=!id; $("delYes").hidden=true;
   $("dlg").showModal();
 }
 $("newBtn").addEventListener("click",()=>openTask(null));
-$("cancelBtn").addEventListener("click",()=>$("dlg").close());
-$("delBtn").addEventListener("click",()=>{$("delConfirm").hidden=false});
+$("delBtn").addEventListener("click",()=>{$("delYes").hidden=false});
 $("delYes").addEventListener("click",async()=>{if(!db||!editing)return;try{await db.doc("tasks/"+editing).delete();setStatus("Tarea eliminada")}catch(e){setStatus("No se pudo eliminar: "+e.message)}$("dlg").close()});
 $("taskForm").addEventListener("submit",async e=>{
   e.preventDefault(); if(!db){setStatus("Sin conexión a la base de datos: no se guardó.");return}
-  const status=$("fStatus").value;
-  const data={title:$("fTitle").value.trim(),area:$("fArea").value.trim(),priority:$("fPrio").value,status,due:$("fDue").value||null,notes:$("fNotes").value.trim(),recurring:$("fRec").checked};
+  const status=$("fStatus").value, rank=parseInt($("fRank").value,10);
+  const data={title:$("fTitle").value.trim(),area:$("fArea").value.trim(),priority:$("fPrio").value,rank:rank>0?rank:null,project:$("fProject").value||null,status,due:$("fDue").value||null,notes:$("fNotes").value.trim(),recurring:$("fRec").checked,delegatedTo:$("fPrio").value==="D"?$("fDeleg").value.trim():null};
   const prev=editing?tasks.find(x=>x.id===editing):null;
   const s=new Set(prev?.sprints||[]); if(status!=="backlog")s.add(WEEK); data.sprints=[...s];
   data.doneAt=status==="hecho"?(prev?.doneAt||today()):null;
@@ -391,19 +516,51 @@ $("taskForm").addEventListener("submit",async e=>{
   }catch(err){setStatus("No se pudo guardar: "+err.message)}
 });
 
+function openProject(id){
+  pEditing=id; const p=id?projects.find(x=>x.id===id):{name:"",goal:"",due:"",status:"activo",notes:""};
+  $("pdlgTitle").textContent=id?"Editar proyecto":"Nuevo proyecto";
+  $("pName").value=p.name||""; $("pGoal").innerHTML=goalOptions(p.goal||""); $("pDue").value=p.due||""; $("pStatus").value=p.status||"activo"; $("pNotes").value=p.notes||"";
+  $("pDel").hidden=!id; $("pDelYes").hidden=true; $("pdlg").showModal();
+}
+$("newProjBtn").addEventListener("click",()=>openProject(null));
+$("pDel").addEventListener("click",()=>{$("pDelYes").hidden=false});
+$("pDelYes").addEventListener("click",async()=>{if(!db||!pEditing)return;try{await db.doc("projects/"+pEditing).delete();setStatus("Proyecto eliminado. Sus tareas quedan sin proyecto.")}catch(e){setStatus("No se pudo eliminar: "+e.message)}$("pdlg").close()});
+$("projForm").addEventListener("submit",async e=>{
+  e.preventDefault(); if(!db){setStatus("Sin conexión a la base de datos: no se guardó.");return}
+  const data={name:$("pName").value.trim(),goal:$("pGoal").value||null,due:$("pDue").value||null,status:$("pStatus").value,notes:$("pNotes").value.trim()};
+  try{if(pEditing)await db.doc("projects/"+pEditing).update(data);else await db.collection("projects").add({...data,created:today()});setStatus("Proyecto guardado");$("pdlg").close()}
+  catch(err){setStatus("No se pudo guardar: "+err.message)}
+});
+
+function openGoal(id){
+  gEditing=id; const g=id?goals.find(x=>x.id===id):{name:"",due:"",metric:""};
+  $("gdlgTitle").textContent=id?"Editar meta":"Nueva meta";
+  $("gName").value=g.name||""; $("gDue").value=g.due||""; $("gMetric").value=g.metric||"";
+  $("gDel").hidden=!id; $("gDelYes").hidden=true; $("gdlg").showModal();
+}
+$("newGoalBtn").addEventListener("click",()=>openGoal(null));
+$("gDel").addEventListener("click",()=>{$("gDelYes").hidden=false});
+$("gDelYes").addEventListener("click",async()=>{if(!db||!gEditing)return;try{await db.doc("goals/"+gEditing).delete();setStatus("Meta eliminada. Sus proyectos quedan sin meta.")}catch(e){setStatus("No se pudo eliminar: "+e.message)}$("gdlg").close()});
+$("goalForm").addEventListener("submit",async e=>{
+  e.preventDefault(); if(!db){setStatus("Sin conexión a la base de datos: no se guardó.");return}
+  const data={name:$("gName").value.trim(),due:$("gDue").value||null,metric:$("gMetric").value.trim()};
+  try{if(gEditing)await db.doc("goals/"+gEditing).update(data);else await db.collection("goals").add({...data,created:today()});setStatus("Meta guardada");$("gdlg").close()}
+  catch(err){setStatus("No se pudo guardar: "+err.message)}
+});
+
 async function save(id,patch){
   if(!db){setStatus("Sin conexión a la base de datos: no se guardó.");return}
   try{await db.doc("tasks/"+id).update(patch);setStatus("Guardado")}catch(e){setStatus("No se pudo guardar: "+e.message)}
 }
 
 // ---------- capture ----------
+let dict=null, usedMic=false;
 $("capSave").addEventListener("click",async()=>{
   const text=$("capText").value.trim(); if(!text)return;
   if(!db){$("capMsg").textContent="Sin conexión: copiá el texto y pegámelo en el chat.";return}
   try{await db.collection("inbox").add({text,created:new Date().toISOString(),source:usedMic?"voz":"texto",processed:false});$("capText").value="";usedMic=false;$("capMsg").textContent="Guardado en la bandeja"}
   catch(e){$("capMsg").textContent="No se pudo guardar: "+e.message}
 });
-let dict=null, usedMic=false;
 $("micBtn").addEventListener("click",()=>{
   if(!dict)return;
   if(dict.active()){dict.stop().catch(()=>{});return}
@@ -416,7 +573,7 @@ $("micBtn").addEventListener("click",()=>{
   if(!c||!c.use){setStatus("Abrí esta página en Claude para ver y guardar tus tareas.");return}
   c.use("dictation").then(d=>{if(!d)return;dict=d;$("micBtn").hidden=false;
     let base="";
-    d.onState(({state})=>{const on=state==="listening"||state==="starting";$("micBtn").classList.toggle("on",on);$("micBtn").textContent=on?"■ Detener":"🎙 Dictar";if(state==="starting")base=$("capText").value})
+    d.onState(({state})=>{const on=state==="listening"||state==="starting";$("micBtn").classList.toggle("on",on);$("micBtn").textContent=on?"■ Detener":"🎙 Dictar";if(state==="starting")base=$("capText").value});
     d.onPartial(({text})=>{$("capText").value=(base?base+" ":"")+text});
     d.onFinal(({text})=>{base=(base?base+" ":"")+text;$("capText").value=base;usedMic=true});
   }).catch(()=>{});
@@ -424,6 +581,8 @@ $("micBtn").addEventListener("click",()=>{
   if(!db){setStatus("Iniciá sesión en Claude para ver tus tareas.");return}
   const timer=setTimeout(()=>setStatus("La base de datos tarda en responder…"),10000);
   db.collection("tasks").onSnapshot(snap=>{clearTimeout(timer);tasks=snap.docs.map(d=>({id:d.id,...d.data()}));setStatus(tasks.length+" tareas · actualizado "+new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"}));renderAll()},e=>{clearTimeout(timer);setStatus("No se pudieron cargar las tareas: "+e.message)});
+  db.collection("projects").onSnapshot(snap=>{projects=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll()},()=>{});
+  db.collection("goals").onSnapshot(snap=>{goals=snap.docs.map(d=>({id:d.id,...d.data()}));renderAll()},()=>{});
   db.collection("inbox").onSnapshot(snap=>{inbox=snap.docs.map(d=>({id:d.id,...d.data()}));renderInbox()},()=>{});
 })();
 })();

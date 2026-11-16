@@ -5,7 +5,11 @@ Este repo es el **segundo cerebro** del usuario (ver `segundo-cerebro/README.md`
 ## Tablero de tareas
 - Tablero publicado: "Mi Segundo Cerebro" (fuente: `app/segundo-cerebro.html`). Sus datos viven en la base de datos del artifact, no en el HTML.
 - Colección `tasks`, documento por tarea:
-  `{title, area, status: "backlog"|"semana"|"haciendo"|"bloqueada"|"hecho", priority: "alta"|"media"|"baja", due: "AAAA-MM-DD"|null, notes, recurring: bool, sprints: ["2026-W46", ...], created, doneAt, checkins: [{date, result: "avance"|"sin-avance"|"bloqueada"|"terminada", note}]}`
+  `{title, area, project: <id de projects>|null, status: "backlog"|"semana"|"haciendo"|"bloqueada"|"hecho", priority: "A"|"B"|"C"|"D"|"E", rank: número|null, delegatedTo, due: "AAAA-MM-DD"|null, notes, recurring: bool, sprints: ["2026-W46", ...], created, doneAt, checkins: [{date, result: "avance"|"sin-avance"|"bloqueada"|"terminada", note}]}`
+- Prioridad método ABCDE: A = debo (consecuencias serias), B = debería, C = sería bueno, D = delegar, E = eliminar. `rank` ordena dentro de la letra (A1, A2…). Las E no cuentan en métricas ni en el avance.
+- Colección `projects`: `{name, goal: <id de goals>|null, due, status: "activo"|"pausado"|"terminado", notes}`. Avance % = tareas hechas ÷ tareas del proyecto (sin E).
+- Colección `goals` (metas): `{name, due, metric}`. Avance de la meta = promedio del avance de sus proyectos.
+- No guardar en este repo información confidencial de clientes: el repo es público. Usar documentos privados de Claude.
 - Colección `inbox`: `{text, created, source: "texto"|"voz", processed: bool}`.
 
 ## Cuando el usuario pase texto o audio
